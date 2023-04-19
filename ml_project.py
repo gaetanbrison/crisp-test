@@ -17,6 +17,7 @@ from htbuilder import HtmlElement, div, hr, a, p, img, styles
 from htbuilder.units import percent, px
 import pandas_profiling
 from streamlit_pandas_profiling import st_profile_report
+import time
 
 
 
@@ -28,7 +29,7 @@ data_url = "http://lib.stat.cmu.edu/datasets/boston"
 # setting up the page streamlit
 
 st.set_page_config(
-    page_title="Linear Regression App ", layout="wide", page_icon="./images/linear-regression.png"
+    page_title="Taxi App ", layout="wide", page_icon="./images/linear-regression.png"
 )
 
 
@@ -69,83 +70,34 @@ def main():
     # hide the footer
     hide_header_footer()
 
-image_nyu = Image.open('images/nyu.png')
+image_nyu = Image.open('images/crisp.png')
 st.image(image_nyu, width=100)
 
-st.title("Linear Regression Lab 🧪")
+st.title("Taxi Lab 🧪")
 
 # navigation dropdown
 
 st.sidebar.header("Dashboard")
 st.sidebar.markdown("---")
-app_mode = st.sidebar.selectbox('🔎 Select Page',['Introduction','Visualization','Prediction'])
-select_dataset =  st.sidebar.selectbox('💾 Select Dataset',["Wine Quality","Real Estate"])
-if select_dataset == "Wine Quality":
-    df = pd.read_csv("wine_quality_red.csv")
-else: 
-    df = pd.read_csv("real_estate.csv")
+app_mode = st.sidebar.selectbox('🔎 Select Page',['Introduction','Visualization','KPI','Prediction'])
+select_dataset =  st.sidebar.selectbox('💾 Select Dataset',["Yellow Cab","Freshtaxi","Demographic"])
+if select_dataset == "Yellow Cab":
+    df = pd.read_csv("Sample_rides_Yellow_Cab.csv")
+elif select_dataset == "Freshtaxi": 
+    df = pd.read_csv("Sample_rides_freshtaxi.csv")
+else : 
+    df = pd.read_csv("Demographic_data.csv")
 
 list_variables = df.columns
 select_variable =  st.sidebar.selectbox('🎯 Select Variable to Predict',list_variables)
 # page 1 
 if app_mode == 'Introduction':
-    image_header = Image.open('./images/Linear-Regression1.webp')
-    st.image(image_header, width=600)
+    #image_header = Image.open('./images/Linear-Regression1.webp')
+    #st.image(image_header, width=600)
 
 
     st.markdown("### 00 - Show  Dataset")
-    if select_dataset == "Wine Quality":
-        col1, col2, col3,col4,col5,col6,col7,col8,col9,col10 = st.columns(10)
-        col1.markdown(" **fixed acidity** ")
-        col1.markdown("most acids involved with wine or fixed or nonvolatile (do not evaporate readily)")
-        col2.markdown(" **volatile acidity** ")
-        col2.markdown("the amount of acetic acid in wine, which at too high of levels can lead to an unpleasant, vinegar taste")
-        col3.markdown(" **citric acid** ")
-        col3.markdown("found in small quantities, citric acid can add 'freshness' and flavor to wines")
-        col4.markdown(" **residual sugar** ")
-        col4.markdown("the amount of sugar remaining after fermentation stops, it's rare to find wines with less than 1 gram/liter")
-        col5.markdown(" **chlorides** ")
-        col5.markdown("the amount of salt in the wine")
-        col6.markdown(" **free sulfur dioxide** ")
-        col6.markdown("the free form of SO2 exists in equilibrium between molecular SO2 (as a dissolved gas) and bisulfite ion; it prevents ")
-        col7.markdown(" **total sulfur dioxide** ")
-        col7.markdown("amount of free and bound forms of S02; in low concentrations, SO2 is mostly undetectable in wine, but at free SO2 ")
-        col8.markdown(" **density** ")
-        col8.markdown("the density of water is close to that of water depending on the percent alcohol and sugar content")
-        col9.markdown(" **pH** ")
-        col9.markdown("describes how acidic or basic a wine is on a scale from 0 (very acidic) to 14 (very basic); most wines are between 3-4 on the ")
-        col10.markdown(" **sulphates** ")
-        col10.markdown("a wine additive which can contribute to sulfur dioxide gas (S02) levels, wich acts as an antimicrobia")
-    else:
-        col1, col2, col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14 = st.columns(14)
-        col1.markdown(" **CRIM** ")
-        col1.markdown("per capita crime rate by town")
-        col2.markdown(" **ZN** ")
-        col2.markdown("proportion of presidential land zoned for lots over 25,000 sq.ft.")
-        col3.markdown(" **CHAS** ")
-        col3.markdown("Charles River dummy variable (= 1 if tract bounds river; 0 otherwise")
-        col4.markdown(" **NOX** ")
-        col4.markdown("nitric oxides concentration (parts per 10 million)")
-        col5.markdown(" **RM** ")
-        col5.markdown("average number of rooms per dwelling")
-        col6.markdown(" **AGE** ")
-        col6.markdown("proportion of owner-occupied units built prior to 1940")
-        col7.markdown(" **DIS** ")
-        col7.markdown("weighted distances to five Boston employment centres")
-        col8.markdown(" **RAD** ")
-        col8.markdown("index of accessibility to radial highways")
-        col9.markdown(" **TAX** ")
-        col9.markdown("full-value property-tax rate per $10,000")
-        col10.markdown(" **PTRATIO** ")
-        col10.markdown("pupil-teacher ratio by town")                        
-        col11.markdown(" **B** ")
-        col11.markdown("1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town")
-        col12.markdown(" **LSTAT** ")
-        col12.markdown("percentage lower status of the population") 
-        col13.markdown(" **MEDV** ")
-        col13.markdown("Median value of owner-occupied homes in $1000's") 
-        col14.markdown(" **INDUS** ")
-        col14.markdown("proportion of non-retail business acres per town") 
+ 
     num = st.number_input('No. of Rows', 5, 10)
     head = st.radio('View from top (head) or bottom (tail)', ('Head', 'Tail'))
     if head == 'Head':
@@ -191,25 +143,27 @@ if app_mode == 'Introduction':
     st.markdown("### 04 - Complete Report")
     if st.button("Generate Report"):
 
-        pr = df.profile_report()
-        st_profile_report(pr)
+        pr = df.sample(n=10000).reset_index(drop=True)
+        pr2 = pr.profile_report()
+        st_profile_report(pr2)
 
 
 if app_mode == 'Visualization':
     st.markdown("## Visualization")
-    symbols = st.multiselect("Select two variables",list_variables,["quality","citric acid"] )
+    haha =  list(df.columns)
+    symbols = st.multiselect("Select two variables",list_variables,[haha[-4],haha[-3]] )
     width1 = st.sidebar.slider("plot width", 1, 25, 10)
     #symbols = st.multiselect("", list_variables, list_variables[:5])
     tab1, tab2= st.tabs(["Line Chart","📈 Correlation"])    
-
+    df_new_new = df.sample(n=10000).reset_index(drop=True)
     tab1.subheader("Line Chart")
-    st.line_chart(data=df, x=symbols[0],y=symbols[1], width=0, height=0, use_container_width=True)
+    st.line_chart(data=df_new_new, x=symbols[0],y=symbols[1], width=0, height=0, use_container_width=True)
     st.write(" ")
-    st.bar_chart(data=df, x=symbols[0], y=symbols[1], use_container_width=True)
+    st.bar_chart(data=df_new_new, x=symbols[0], y=symbols[1], use_container_width=True)
 
     tab2.subheader("Correlation Tab 📉")
     fig,ax = plt.subplots(figsize=(width1, width1))
-    sns.heatmap(df.corr(),cmap= sns.cubehelix_palette(8),annot = True, ax=ax)
+    sns.heatmap(df_new_new.corr(),cmap= sns.cubehelix_palette(8),annot = True, ax=ax)
     tab2.write(fig)
 
 
@@ -221,19 +175,34 @@ if app_mode == 'Visualization':
     fig3 = sns.pairplot(df2)
     st.pyplot(fig3)
 
-
-
+if app_mode == 'KPI':
+    print("Dashboard Page with KPI")
+    image_dash = Image.open('images/dashboard2.png')
+    st.image(image_dash, width=600)
 
 if app_mode == 'Prediction':
+    from codecarbon import OfflineEmissionsTracker
+    tracker = OfflineEmissionsTracker(country_iso_code="FRA") # FRA = France
+    tracker.start()
+    start_time = time.time()
     st.markdown("## Prediction")
+    df = df.dropna()
     train_size = st.sidebar.number_input("Train Set Size", min_value=0.00, step=0.01, max_value=1.00, value=0.70)
+    cat_cols = df.select_dtypes(include=['object']).columns
+
+    # Convert the categorical columns to integer values
+    for col in cat_cols:
+        df[col] = pd.Categorical(df[col]).codes.astype('int')
     new_df= df.drop(labels=select_variable, axis=1)  #axis=1 means we drop data by columns
     list_var = new_df.columns
-    output_multi = st.multiselect("Select Explanatory Variables", list_var)
+    output_multi = st.multiselect("Select Explanatory Variables", list_var,[list_var[0],list_var[1],list_var[2]])
 
     def predict(target_choice,train_size,new_df,output_multi):
         #independent variables / explanatory variables
         #choosing column for target
+        # Select the categorical columns
+
+
         new_df2 = new_df[output_multi]
         x =  new_df2
         y = df[target_choice]
@@ -249,7 +218,7 @@ if app_mode == 'Prediction':
 
         return X_train, X_test, y_train, y_test, predictions,x,y
 
-    X_train, X_test, y_train, y_test, predictions,x,y= predict(select_variable,train_size,new_df,list_var)
+    X_train, X_test, y_train, y_test, predictions,x,y= predict(select_variable,train_size,new_df,output_multi)
 
     st.subheader('🎯 Results')
 
@@ -260,7 +229,15 @@ if app_mode == 'Prediction':
     st.write("4) The R-Square score of the model is " , np.round(mt.r2_score(y_test, predictions),2))
 
 
+    st.markdown("#### Execution Time Model ⚙️")
 
+    st.warning("--- %s seconds ---" % (np.round(time.time() - start_time,2)))
+
+    st.markdown("#### Sustainable metrics 🌱")
+
+
+    results = tracker.stop()
+    st.error(' %.12f kWh' % results)
 
 if __name__=='__main__':
     main()
@@ -269,8 +246,6 @@ st.markdown(" ")
 st.markdown("### 👨🏼‍💻 **App Contributors:** ")
 st.image(['images/gaetan.png'], width=100,caption=["Gaëtan Brison"])
 
-st.markdown(f"####  Link to Project Website [here]({'https://github.com/NYU-DS-4-Everyone/Linear-Regression-App'}) 🚀 ")
-st.markdown(f"####  Feel free to contribute to the app and give a ⭐️")
 
 
 def image(src_as_string, **style):
@@ -334,7 +309,7 @@ def layout(*args):
 def footer2():
     myargs = [
         "👨🏼‍💻 Made by ",
-        link("https://github.com/NYU-DS-4-Everyone", "NYU - Professor Gaëtan Brison"),
+        link("https://www.linkedin.com/in/gaetan-brison/", "Gaëtan Brison"),
         "🚀"
     ]
     layout(*myargs)
